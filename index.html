@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1953: 다시 찾은 평화 - 초등 평화 방탈출 게임</title>
+  <meta name="description" content="6·25 전쟁 이후 평화를 회복하기 위한 시민들의 노력을 알아보고, 오늘날 나의 평화 실천을 약속하는 10분 체험형 방탈출 게임">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- BGM & Sound Controls -->
+  <header class="game-header">
+    <div class="logo-area">
+      <span class="badge">사회과 평화 수업</span>
+      <h1 class="main-title">🕊️ 1953: 다시 찾은 평화</h1>
+    </div>
+    <div class="header-controls">
+      <div class="timer-pill" id="playTimer" title="소요 시간">⏱️ 00:00</div>
+      <button id="soundToggleBtn" class="icon-btn" title="배경음악 켜기/끄기">
+        <span id="soundIcon">🔊</span> <span id="soundLabel">음향 켜짐</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Progress Bar (Steps) -->
+  <nav class="step-progress-container" aria-label="게임 진행 단계">
+    <div class="step-progress-bar" id="progressBar"></div>
+    <div class="step-items">
+      <div class="step-item active" data-step="intro">
+        <div class="step-circle">1</div>
+        <span class="step-name">출발 준비</span>
+      </div>
+      <div class="step-item" data-step="stage1">
+        <div class="step-circle">2</div>
+        <span class="step-name">판자방 탈출</span>
+      </div>
+      <div class="step-item" data-step="stage2">
+        <div class="step-circle">3</div>
+        <span class="step-name">마을 광장 재건</span>
+      </div>
+      <div class="step-item" data-step="stage3">
+        <div class="step-circle">4</div>
+        <span class="step-name">평화의 길 선택</span>
+      </div>
+      <div class="step-item" data-step="stage4">
+        <div class="step-circle">5</div>
+        <span class="step-name">평화 다짐 & 임명장</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Game Container -->
+  <main class="game-container" id="gameContainer">
+    
+    <!-- ==============================================
+         [화면 1] 인트로 & 참가 등록
+         ============================================== -->
+    <section class="screen-view active" id="screenIntro">
+      <div class="story-card intro-card">
+        <div class="retro-stamp">1953년 7월</div>
+        <div class="hero-illustration">
+          <!-- Warm SVG Illustration of 1950s rebuilding & hope -->
+          <svg viewBox="0 0 600 240" class="hero-svg" aria-label="1953년 재건과 평화의 상징 그림">
+            <defs>
+              <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#faeccb"/>
+                <stop offset="60%" stop-color="#f5e0be"/>
+                <stop offset="100%" stop-color="#e8cfad"/>
+              </linearGradient>
+              <linearGradient id="sunGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ff7e40"/>
+                <stop offset="100%" stop-color="#fdb849"/>
+              </linearGradient>
+            </defs>
+            <!-- Sky & Rising Sun -->
+            <rect width="600" height="240" rx="16" fill="url(#skyGrad)"/>
+            <circle cx="300" cy="180" r="100" fill="url(#sunGrad)" opacity="0.35"/>
+            <!-- Mountains in background -->
+            <path d="M-20,200 Q90,120 200,190 T420,180 T620,200 L620,240 L-20,240 Z" fill="#c7b196"/>
+            <path d="M50,210 Q180,140 320,200 T580,190 L600,240 L50,240 Z" fill="#b1997d"/>
+            <!-- Tent school & wooden village huts -->
+            <polygon points="120,210 160,150 200,210" fill="#7d6a55"/>
+            <polygon points="140,210 160,165 180,210" fill="#eed9be"/>
+            <rect x="230" y="160" width="70" height="50" fill="#8d735a" rx="4"/>
+            <polygon points="220,160 265,130 310,160" fill="#5c4533"/>
+            <rect x="255" y="180" width="20" height="30" fill="#3a2b1f"/>
+            <!-- White Peace Dove in sky -->
+            <g transform="translate(390, 60) scale(0.9)">
+              <path d="M0,25 C10,10 35,0 55,8 C70,14 80,30 85,45 C75,40 60,40 50,48 C45,35 30,30 15,35 C5,38 -2,32 0,25 Z" fill="#ffffff"/>
+              <path d="M35,22 C45,15 65,18 75,28 C62,28 50,33 40,42 C38,34 35,27 35,22 Z" fill="#f0f0f0"/>
+              <circle cx="78" cy="22" r="2.5" fill="#333"/>
+              <!-- Olive branch in beak -->
+              <path d="M83,25 Q92,26 95,22" stroke="#5d8a43" stroke-width="2" fill="none"/>
+              <ellipse cx="90" cy="22" rx="4" ry="2" fill="#71a952" transform="rotate(-20 90 22)"/>
+              <ellipse cx="94" cy="20" rx="3.5" ry="1.8" fill="#71a952" transform="rotate(30 94 20)"/>
+            </g>
+            <!-- Ground line -->
+            <rect x="0" y="210" width="600" height="30" fill="#8f785f"/>
+            <!-- Little sprout of hope -->
+            <path d="M470,215 Q475,200 480,195 Q485,200 490,215" stroke="#567d3e" stroke-width="3" fill="none"/>
+            <ellipse cx="474" cy="198" rx="6" ry="3.5" fill="#6ba34d" transform="rotate(-30 474 198)"/>
+            <ellipse cx="486" cy="198" rx="6" ry="3.5" fill="#6ba34d" transform="rotate(30 486 198)"/>
+          </svg>
+        </div>
+
+        <div class="card-content">
+          <h2 class="screen-heading">전쟁이 멈춘 날, 희망의 문을 열어요!</h2>
+          <p class="story-desc">
+            1953년 7월 27일, 오랜 6·25 전쟁의 총성이 마침내 멈추었습니다.<br>
+            비록 마을은 부서지고 가진 것은 없었지만, 평범한 시민들은 <strong>서로를 아끼고 도우며</strong> 다시 일상을 꽃피웠습니다.
+          </p>
+          <div class="notice-box">
+            <span class="notice-icon">💡</span>
+            <div class="notice-text">
+              <strong>오늘의 사회과 탐구 미션 (약 10분)</strong>
+              <p>판자방을 탈출하고 마을을 재건하여 나에게 맞는 <strong>평화의 길</strong>을 찾고, <strong>어린이 평화 시민 임명장</strong>을 받아보세요!</p>
+            </div>
+          </div>
+
+          <!-- Student Name Inputs -->
+          <form class="student-form" id="studentForm">
+            <div class="input-row">
+              <div class="input-group">
+                <label for="schoolClass">🏫 학교 및 학급</label>
+                <input type="text" id="schoolClass" placeholder="예: 평화초등학교 6학년 2반" required value="평화초등학교 6학년">
+              </div>
+              <div class="input-group">
+                <label for="studentName">✍️ 학생 이름</label>
+                <input type="text" id="studentName" placeholder="예: 김평화" required maxlength="10">
+              </div>
+            </div>
+            <button type="submit" class="btn-primary start-btn pulse" id="startBtn">
+              🚪 1953년 피란민 마을로 들어가기
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         [화면 2] 1단계: 판자방 탈출 (구호물품 나눔 & 라디오 퍼즐)
+         ============================================== -->
+    <section class="screen-view" id="screenStage1">
+      <div class="story-card">
+        <div class="stage-header">
+          <span class="stage-tag">1단계 : 1953년 부산 피란민 마을</span>
+          <h2 class="screen-heading">따뜻한 온기를 모아 문을 열어요!</h2>
+        </div>
+
+        <div class="dialogue-box">
+          <div class="avatar-speaker">👦</div>
+          <div class="speech-bubble">
+            "드디어 전쟁이 끝났다는 방송이 나온 것 같은데... 방 문이 굳게 닫혀 있어!<br>
+            밖에 계신 이웃들에게 <strong>꼭 필요한 구호 물품을 전해드리고</strong>, <strong>낡은 라디오의 주파수</strong>를 맞춰 문을 열 열쇠를 찾자!"
+          </div>
+        </div>
+
+        <!-- Missions Container -->
+        <div class="missions-grid">
+          <!-- Mission 1: Matching Relief Items -->
+          <div class="mission-panel" id="reliefMission">
+            <div class="panel-header">
+              <h3><span class="badge-mini">미션 A</span> 🍲 이웃에게 구호 물품 전하기</h3>
+              <span class="status-badge" id="reliefStatus">0 / 3 완료</span>
+            </div>
+            <p class="hint-text">물품을 먼저 누른 뒤, 도움이 필요한 알맞은 이웃을 눌러 전해주세요!</p>
+
+            <!-- Relief Items to Pick (순서 섞음) -->
+            <div class="relief-items-row">
+              <button type="button" class="item-card" data-item="food" id="item-food">
+                <div class="item-icon">🍙</div>
+                <div class="item-info">
+                  <strong>정성 담긴 주먹밥</strong>
+                  <span>굶주린 배를 채워줘요</span>
+                </div>
+              </button>
+              <button type="button" class="item-card" data-item="blanket" id="item-blanket">
+                <div class="item-icon">🧣</div>
+                <div class="item-info">
+                  <strong>따뜻한 누비담요</strong>
+                  <span>찬 바람을 막아줘요</span>
+                </div>
+              </button>
+              <button type="button" class="item-card" data-item="medicine" id="item-medicine">
+                <div class="item-icon">🩹</div>
+                <div class="item-info">
+                  <strong>붕대와 상비약</strong>
+                  <span>다친 상처를 치료해요</span>
+                </div>
+              </button>
+            </div>
+
+            <!-- Neighbors in Need (순서 섞음: 1:아기[담요필요-2번물품], 2:할아버지[상비약필요-3번물품], 3:남매[주먹밥필요-1번물품]) -->
+            <div class="neighbors-row">
+              <div class="neighbor-card" data-target="baby" id="target-baby">
+                <div class="target-avatar">👶</div>
+                <div class="target-speech">"차가운 바닥에 아이가 오들오들 떨고 있어요..."</div>
+                <div class="target-state" id="state-baby">도움 대기 중</div>
+              </div>
+              <div class="neighbor-card" data-target="elder" id="target-elder">
+                <div class="target-avatar">👴</div>
+                <div class="target-speech">"피란길에 다리를 심하게 긁혀 걸을 수가 없구려..."</div>
+                <div class="target-state" id="state-elder">도움 대기 중</div>
+              </div>
+              <div class="neighbor-card" data-target="hungry" id="target-hungry">
+                <div class="target-avatar">👧</div>
+                <div class="target-speech">"동생과 함께 며칠 동안 한 끼도 먹지 못했어요..."</div>
+                <div class="target-state" id="state-hungry">도움 대기 중</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mission 2: Vintage Radio Frequency -->
+          <div class="mission-panel" id="radioMission">
+            <div class="panel-header">
+              <h3><span class="badge-mini">미션 B</span> 📻 평화의 소리 라디오 주파수 맞추기</h3>
+              <span class="status-badge" id="radioStatus">신호 찾는 중...</span>
+            </div>
+            <p class="hint-text">다이얼 슬라이더를 움직여 지지직거리는 잡음을 없애고 평화 방송을 찾아보세요! <strong>(힌트: 195.3 MHz)</strong></p>
+
+            <!-- Retro Radio Box -->
+            <div class="retro-radio">
+              <div class="radio-display">
+                <div class="radio-speaker-grille">
+                  <div class="grille-line"></div>
+                  <div class="grille-line"></div>
+                  <div class="grille-line"></div>
+                </div>
+                <div class="radio-dial-window">
+                  <div class="freq-scale">
+                    <span>170</span>
+                    <span>180</span>
+                    <span class="highlight-point">195.3 (평화)</span>
+                    <span>210</span>
+                    <span>220</span>
+                  </div>
+                  <div class="freq-needle" id="freqNeedle"></div>
+                </div>
+                <div class="radio-led" id="radioLed"></div>
+              </div>
+
+              <!-- Radio Controls -->
+              <div class="radio-controls">
+                <label for="freqSlider" class="dial-label">주파수 조절 다이얼:</label>
+                <input type="range" id="freqSlider" min="160" max="230" step="0.5" value="175">
+                <div class="current-freq" id="currentFreq">현재 주파수: <strong>175.0 MHz</strong></div>
+              </div>
+
+              <!-- Radio Broadcast Message Box -->
+              <div class="radio-message-box" id="radioMessageBox">
+                <span class="noise-text" id="radioBroadcastText">치지직... 삐익... 잡음만 들립니다. 주파수를 195.3으로 돌려보세요!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage 1 Exit Door Lock Area -->
+        <div class="door-status-card" id="doorCard">
+          <div class="door-info-row">
+            <div class="door-icon-box">
+              <span class="door-icon" id="doorIcon">🔒</span>
+            </div>
+            <div class="door-desc">
+              <h4 id="doorTitle">판자방 문이 잠겨 있습니다.</h4>
+              <p id="doorSub">두 미션을 모두 완료하면 [희망의 열쇠]를 얻어 밖으로 나갈 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="door-btn-wrap">
+            <button type="button" class="btn-primary" id="stage1NextBtn" disabled>
+              🗝️ 열쇠로 문 열고 마을 광장으로 나가기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         [화면 3] 2단계: 마을 광장 재건 (평화 가치 퍼즐)
+         ============================================== -->
+    <section class="screen-view" id="screenStage2">
+      <div class="story-card">
+        <div class="stage-header">
+          <span class="stage-tag">2단계 : 무너진 마을 광장</span>
+          <h2 class="screen-heading">우리의 손으로 희망의 다리를 놓아요!</h2>
+        </div>
+
+        <div class="dialogue-box">
+          <div class="avatar-speaker">🏘️</div>
+          <div class="speech-bubble">
+            "광장으로 나왔지만 벽돌과 잔해로 길이 막혀 있어요!<br>
+            전쟁의 상처를 극복하고 마을을 다시 세우기 위해 우리에게 가장 필요한 <strong>[3가지 평화의 가치]</strong> 조각을 알맞은 자리에 맞춰주세요."
+          </div>
+        </div>
+
+        <!-- Value Tiles Board Puzzle -->
+        <div class="puzzle-board-container">
+          <div class="tiles-pool-area">
+            <h4>🧩 아래 흩어진 가치 타일을 눌러 선택하세요</h4>
+            <div class="tiles-pool" id="tilesPool">
+              <div class="value-tile" draggable="true" data-value="sharing" id="tile-sharing">
+                <span class="tile-icon">🌾</span>
+                <span class="tile-title">나눔</span>
+                <span class="tile-sub">"작은 밥 한 덩이도 나눠요"</span>
+              </div>
+              <div class="value-tile" draggable="true" data-value="peace" id="tile-peace">
+                <span class="tile-icon">🕊️</span>
+                <span class="tile-title">평화</span>
+                <span class="tile-sub">"다시는 아픔이 없기를"</span>
+              </div>
+              <div class="value-tile" draggable="true" data-value="cooperation" id="tile-cooperation">
+                <span class="tile-icon">🤝</span>
+                <span class="tile-title">협동</span>
+                <span class="tile-sub">"힘을 모아 집을 지어요"</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Target Slots on the Rebuilding Board -->
+          <div class="board-slots-area">
+            <h4>🏛️ 마을 재건 약속 게시판</h4>
+            <div class="slots-container">
+              
+              <div class="board-slot" data-accept="cooperation" id="slot-cooperation">
+                <div class="slot-placeholder">
+                  <span class="slot-icon-hint">🤝</span>
+                  <strong>첫 번째 약속: 서로 돕기</strong>
+                  <p>혼자서는 세울 수 없는 무너진 학교와 다리를 이웃과 함께 힘을 합쳐 복구해요.</p>
+                  <span class="slot-click-hint">[이곳을 눌러 알맞은 타일 놓기]</span>
+                </div>
+              </div>
+
+              <div class="board-slot" data-accept="sharing" id="slot-sharing">
+                <div class="slot-placeholder">
+                  <span class="slot-icon-hint">🌾</span>
+                  <strong>두 번째 약속: 함께 나누기</strong>
+                  <p>부족한 옷과 먹거리를 서로 양보하고, 홀로 남은 이웃에게 온정을 베풀어요.</p>
+                  <span class="slot-click-hint">[이곳을 눌러 알맞은 타일 놓기]</span>
+                </div>
+              </div>
+
+              <div class="board-slot" data-accept="peace" id="slot-peace">
+                <div class="slot-placeholder">
+                  <span class="slot-icon-hint">🕊️</span>
+                  <strong>세 번째 약속: 평화 지키기</strong>
+                  <p>전쟁의 아픔을 가슴에 새기고, 배려와 화해로 다툼 없는 세상을 만들어요.</p>
+                  <span class="slot-click-hint">[이곳을 눌러 알맞은 타일 놓기]</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Rebuilt Village Result Area -->
+        <div class="rebuild-banner" id="rebuildBanner">
+          <div class="banner-info-row">
+            <div class="banner-icon-box">
+              <span class="banner-icon">✨</span>
+            </div>
+            <div class="banner-text">
+              <h4>마을 광장이 깨끗하게 복구되었습니다!</h4>
+              <p>시민들의 땀방울과 따뜻한 마음이 모여 폐허 위에 새싹이 돋아났습니다.<br>
+              이제 당신의 손으로 어떤 평화의 길을 걸어갈지 선택할 시간입니다.</p>
+            </div>
+          </div>
+          <div class="banner-btn-wrap">
+            <button type="button" class="btn-primary pulse" id="stage2NextBtn" disabled>
+              👣 나의 평화의 길 선택하러 가기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==============================================
+         [화면 4] 3단계: 평화의 선택 (4대 직업군 분기)
+         ============================================== -->
+    <section class="screen-view" id="screenStage3">
+      <div class="story-card">
+        <div class="stage-header">
+          <span class="stage-tag">3단계 : 1953년, 나의 선택</span>
+          <h2 class="screen-heading">당신은 어떤 모습으로 평화를 꽃피우겠습니까?</h2>
+        </div>
+
+        <p class="story-desc center">
+          전쟁이 끝난 후, 시민들은 각자의 자리에서 최선을 다해 대한민국을 다시 일으켜 세웠습니다.<br>
+          당신의 마음에 가장 깊은 울림을 주는 <strong>평화 시민의 역할</strong>을 하나 선택해 보세요.
+        </p>
+
+        <!-- 4 Job Cards Grid -->
+        <div class="job-cards-grid" id="jobCardsGrid">
+          
+          <!-- Option 1: Soldier / Peacekeeper -->
+          <div class="job-card" data-job="soldier" tabindex="0">
+            <div class="job-badge">평화 지킴이</div>
+            <div class="job-avatar">🛡️</div>
+            <h3 class="job-title">국군 장병</h3>
+            <div class="job-quote">"다시는 이 땅에 비극이 없도록 나라를 굳건히 지키겠습니다."</div>
+            <ul class="job-points">
+              <li>국경을 튼튼히 지켜 평화로운 일상을 지킴</li>
+              <li>무너진 도로와 다리를 고쳐 피란민 귀환 지원</li>
+              <li>전쟁 고아와 부상 이재민 구호 활동</li>
+            </ul>
+            <button type="button" class="btn-select-job">이 길을 선택하기</button>
+          </div>
+
+          <!-- Option 2: Shoeshine Boy / Resilient Youth -->
+          <div class="job-card" data-job="shoeshine" tabindex="0">
+            <div class="job-badge">희망의 소년 가장</div>
+            <div class="job-avatar">👟</div>
+            <h3 class="job-title">구두닦이 소년</h3>
+            <div class="job-quote">"동생들을 위해 정직하게 일하고, 더 어려운 친구에게 밥을 나눠줄래요."</div>
+            <ul class="job-points">
+              <li>어린 나이에 구두통을 메고 가족을 부양함</li>
+              <li>거리의 더 어린 고아들과 주먹밥을 함께 나눔</li>
+              <li>끈기와 기술을 배워 훗날 산업의 주역으로 성장</li>
+            </ul>
+            <button type="button" class="btn-select-job">이 길을 선택하기</button>
+          </div>
+
+          <!-- Option 3: Market Merchant -->
+          <div class="job-card" data-job="merchant" tabindex="0">
+            <div class="job-badge">따뜻한 연대</div>
+            <div class="job-avatar">🍎</div>
+            <h3 class="job-title">국제시장 상인</h3>
+            <div class="job-quote">"덤을 듬뿍 얹어주며, 잿더미 시장에 다시 온기와 웃음을 채우겠습니다."</div>
+            <ul class="job-points">
+              <li>부산 깡통시장 좌판에서 억척스레 장사를 시작</li>
+              <li>배고픈 이재민에게 음식을 나누고 일자리를 만듦</li>
+              <li>전쟁의 절망을 이겨내고 시장 경제를 되살림</li>
+            </ul>
+            <button type="button" class="btn-select-job">이 길을 선택하기</button>
+          </div>
+
+          <!-- Option 4: Tent School Teacher -->
+          <div class="job-card" data-job="teacher" tabindex="0">
+            <div class="job-badge">미래의 등불</div>
+            <div class="job-avatar">📚</div>
+            <h3 class="job-title">천막학교 선생님</h3>
+            <div class="job-quote">"나뭇가지로 흙바닥에 글을 쓰더라도, 아이들의 꿈은 멈출 수 없습니다."</div>
+            <ul class="job-points">
+              <li>부서진 건물 대신 천막을 치고 아이들을 가르침</li>
+              <li>배움과 평화의 소중함을 어린이의 마음에 심어줌</li>
+              <li>미래를 이끌어갈 훌륭한 인재들을 길러냄</li>
+            </ul>
+            <button type="button" class="btn-select-job">이 길을 선택하기</button>
+          </div>
+
+        </div>
+
+        <!-- Selected Job Story Modal / Card -->
+        <div class="job-detail-box" id="jobDetailBox" style="display: none;">
+          <div class="job-detail-header">
+            <span class="job-detail-icon" id="detailIcon">🛡️</span>
+            <div>
+              <h3 id="detailTitle">국군 장병의 이야기</h3>
+              <p id="detailRole">평화를 지키는 든든한 등대</p>
+            </div>
+          </div>
+          <p class="job-detail-story" id="detailStory">
+            이야기 내용이 들어갑니다.
+          </p>
+          <div class="job-detail-reflection">
+            <strong>🕊️ 역사 속 배울 점:</strong>
+            <span id="detailLesson">교훈 내용</span>
+          </div>
+          <button type="button" class="btn-primary pulse" id="stage3NextBtn">
+            📝 2026년 오늘날 나의 평화 다짐하러 가기
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================
+         [화면 5] 4단계: 2026년 오늘날 나의 평화 다짐 & 임명장
+         ============================================== -->
+    <section class="screen-view" id="screenStage4">
+      <div class="story-card pledge-card">
+        <div class="stage-header">
+          <span class="stage-tag">마지막 단계 : 2026년 오늘날의 우리</span>
+          <h2 class="screen-heading">내가 실천할 '작은 평화'를 약속해요</h2>
+        </div>
+
+        <div class="notice-box">
+          <span class="notice-icon">🌱</span>
+          <div class="notice-text">
+            <strong>과거의 노력이 오늘날의 우리를 만들었습니다</strong>
+            <p>1953년 시민들이 서로 돕고 일상을 세웠듯, 지금 우리도 교실과 가정에서 작은 평화를 실천할 수 있습니다. 내가 지킬 평화 행동을 선택하고 나만의 다짐을 적어보세요!</p>
+          </div>
+        </div>
+
+        <!-- Peace Action Checkboxes -->
+        <div class="pledge-form-area">
+          <h4>📌 내가 교실과 일상에서 실천할 평화 행동 (모두 골라보세요)</h4>
+          <div class="pledge-options-grid">
+            <label class="pledge-checkbox-label">
+              <input type="checkbox" name="peacePledge" value="친구의 다른 의견을 존중하고 경청하기" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">🤝 친구의 생각이 나와 달라도 끝까지 귀 기울여 들어주기</span>
+            </label>
+            <label class="pledge-checkbox-label">
+              <input type="checkbox" name="peacePledge" value="다툼이 생겼을 때 화내지 않고 고운 말로 대화하기" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">💬 다툼이 생겼을 때 먼저 화내지 않고 차분한 대화로 풀기</span>
+            </label>
+            <label class="pledge-checkbox-label">
+              <input type="checkbox" name="peacePledge" value="외롭거나 도움이 필요한 친구에게 먼저 다가가기" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">💛 혼자 있거나 어려움을 겪는 친구에게 따뜻한 손 내밀기</span>
+            </label>
+            <label class="pledge-checkbox-label">
+              <input type="checkbox" name="peacePledge" value="6·25 전쟁의 아픔과 평화의 소중함을 기억하기" checked>
+              <span class="checkbox-custom"></span>
+              <span class="checkbox-text">🕊️ 6·25 전쟁의 아픔을 잊지 않고 평화의 가치를 소중히 여기기</span>
+            </label>
+          </div>
+
+          <!-- Custom One-line Pledge Input with Preset Helper Buttons -->
+          <div class="custom-pledge-area">
+            <label for="customPledgeText"><strong>✍️ 나만의 평화 한 줄 다짐 적기:</strong></label>
+            <input type="text" id="customPledgeText" placeholder="예: 친구들에게 먼저 양보하고 따뜻한 말을 건네는 평화 어린이가 되겠습니다." maxlength="60" required>
+            
+            <div class="preset-badges">
+              <span class="preset-title">추천 다짐 문장 클릭:</span>
+              <button type="button" class="badge-btn" data-preset="친구의 장점을 먼저 칭찬하고 서로를 아끼는 어린이가 되겠습니다.">👍 칭찬과 배려</button>
+              <button type="button" class="badge-btn" data-preset="어려운 일이 생겨도 포기하지 않고 긍정적인 마음으로 협동하겠습니다.">🤝 긍정과 협동</button>
+              <button type="button" class="badge-btn" data-preset="우리의 평화로운 일상을 지켜주신 분들께 감사하며 평화를 사랑하겠습니다.">🕊️ 감사와 평화 사랑</button>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary generate-cert-btn pulse" id="makeCertBtn">
+            🏆 어린이 평화 시민 임명장 발급받기
+          </button>
+        </div>
+
+        <!-- ==============================================
+             [최종 임명장 렌더링 영역]
+             ============================================== -->
+        <div class="certificate-wrapper" id="certificateArea" style="display: none;">
+          <div class="certificate-paper" id="printableCert">
+            <!-- Vintage Gold / Classical Border Decor -->
+            <div class="cert-border-outer">
+              <div class="cert-border-inner">
+                
+                <div class="cert-header">
+                  <div class="cert-emblem">🕊️</div>
+                  <div class="cert-num" id="certNumber">제 2026-평화-0727호</div>
+                  <h2 class="cert-title">어린이 평화 시민 임명장</h2>
+                  <div class="cert-subtitle">Certificate of Young Peace Citizen</div>
+                </div>
+
+                <div class="cert-student-info">
+                  <div class="info-line">
+                    <span class="info-label">소 속:</span>
+                    <span class="info-value" id="certSchoolClass">평화초등학교 6학년</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">성 명:</span>
+                    <span class="info-value highlight" id="certStudentName">김평화</span>
+                  </div>
+                  <div class="info-line">
+                    <span class="info-label">임명 부문:</span>
+                    <span class="info-value badge-cert" id="certJobTitle">평화 지킴이 (국군 장병 부문)</span>
+                  </div>
+                </div>
+
+                <div class="cert-body">
+                  <p>
+                    위 어린이는 6·25 전쟁 이후 폐허 속에서도 서로 돕고 헌신하여 평화를 되살린 시민들의 숭고한 노력을 바르게 이해하였으며,
+                  </p>
+                  <p>
+                    앞으로 학교와 일상 속에서 나눔과 배려를 실천하여 아름답고 평화로운 세상을 만들어갈 것을 다짐하였으므로 <strong>‘자랑스러운 어린이 평화 시민’</strong>으로 임명합니다.
+                  </p>
+
+                  <div class="cert-pledge-box">
+                    <div class="pledge-box-title">【 나의 평화 실천 약속 】</div>
+                    <div class="pledge-box-content" id="certPledgeContent">
+                      "친구들에게 먼저 양보하고 따뜻한 말을 건네는 어린이가 되겠습니다."
+                    </div>
+                  </div>
+                </div>
+
+                <div class="cert-footer">
+                  <div class="cert-date" id="certDate">2026년 9월 15일</div>
+                  <div class="cert-authority">
+                    <span>대한민국 어린이 평화지킴이 본부</span>
+                    <div class="cert-stamp">
+                      <div class="stamp-circle">
+                        <span>평화</span>
+                        <span>시민</span>
+                        <span>인증</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Certificate Action Buttons -->
+          <div class="cert-actions">
+            <button type="button" class="btn-action" id="printCertBtn">
+              🖨️ 임명장 인쇄 / PDF 저장
+            </button>
+            <button type="button" class="btn-action secondary" id="restartBtn">
+              🔄 다른 평화의 길도 체험해보기 (처음으로)
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="game-footer">
+    <p>초등학교 5~6학년 사회과 교육과정 연계: 6·25 전쟁 이후 평화 회복을 위한 시민의 노력과 오늘날의 평화 실천</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
