@@ -1,17 +1,13 @@
 /**
- * 1953: 다시 찾은 평화 - 초등 10분 수업 정리용 인터랙티브 방탈출 게임
- * 
- * - 단계별 진행 제어 (Intro -> Stage 1 -> Stage 2 -> Stage 3 -> Stage 4)
- * - Web Audio API 기반 효과음 및 사운드 신시사이저 (외부 오디오 의존 없음)
- * - 초등학생 친화적 직관적 클릭/드래그 퍼즐 로직
- * - 개인별 맞춤 평화 시민 임명장 생성 및 인쇄 기능
+ * 1950년 6월: 그날의 선택 — 6·25 전쟁과 평화 아카이브
+ * 인터랙티브 역사 다큐멘터리 체험 로직
  */
 
 (() => {
   'use strict';
 
   // ==========================================================================
-  // 1. 상태(State) 관리
+  // 1. 상태 관리 (State)
   // ==========================================================================
   const gameState = {
     currentStep: 'intro', // 'intro' | 'stage1' | 'stage2' | 'stage3' | 'stage4'
@@ -19,6 +15,7 @@
       schoolClass: '평화초등학교 6학년',
       name: '김평화'
     },
+    unlockedClues: new Set([1]), // 단서 1번은 기본 개방
     stage1: {
       selectedItem: null,
       helpedTargets: new Set(),
@@ -43,62 +40,82 @@
     timerInterval: null
   };
 
-  // 4가지 직업군 상세 데이터
+  // 4대 역사적 역할 데이터 (고증 바탕 역사 다큐멘터리)
   const JOB_DATA = {
     soldier: {
       name: '국군 장병',
-      badge: '평화 지킴이 (국군 장병 부문)',
-      icon: '🛡️',
-      role: '평화를 지키는 든든한 등대',
+      badge: '평화 수호 부문 (호국 영웅)',
+      role: '전선을 수호하고 피란민의 귀환을 도운 평화의 방파제',
       story: `
-        "포성이 멈춘 후, 우리는 다시는 사랑하는 가족과 친구들을 잃지 않도록 밤낮으로 국경을 지켰습니다.<br>
-        무너진 한강 다리를 임시로 잇고, 피란민들이 고향으로 돌아갈 수 있도록 흙먼지를 뒤집어쓰며 길을 닦았습니다.
-        전쟁의 상처 속에서도 고아들을 부대로 데려와 따뜻한 밥을 먹이고 희망을 심어주었습니다."
+        “포성이 멎은 1953년 7월, 우리는 다시는 사랑하는 가족과 형제들을 잃지 않도록 밤낮으로 철책을 지켰습니다.<br>
+        폭파된 한강 다리와 도로를 임시로 잇고, 지뢰를 제거하여 피란민들이 고향 땅을 다시 밟을 수 있도록 온몸을 바쳤습니다.<br>
+        전쟁으로 부모를 잃은 어린 고아들을 부대로 데려와 따뜻한 주먹밥을 먹이고, 미래를 향한 희망을 함께 품었습니다.”
       `,
-      lesson: '평화는 거저 주어지는 것이 아니며, 안전을 지켜주는 든든한 힘과 희생이 있었기에 오늘날 우리가 평화롭게 공부할 수 있습니다.'
+      lesson: '평화는 값없이 주어지는 것이 아니며, 안전한 일상을 든든하게 지켜낸 헌신과 희생이 있었기에 오늘날 우리가 자유롭게 꿈꿀 수 있습니다.'
     },
     shoeshine: {
       name: '구두닦이 소년',
-      badge: '희망의 소년 가장 (청소년 자립 부문)',
-      icon: '👟',
-      role: '어려움 속에서도 피어난 불굴의 희망',
+      badge: '청소년 자립 부문 (불굴의 희망)',
+      role: '무거운 구두통을 메고 가족을 지켜낸 소년 가장',
       story: `
-        "전쟁으로 부모님을 잃고 어린 동생 둘을 데리고 부산 역전으로 내려왔습니다.
-        무거운 구두통을 메고 하루 종일 뛰어다니며 어른들의 구두를 닦았지요.<br>
-        손은 새까매지고 발은 부텄지만, 번 돈으로 주먹밥을 사서 더 어린 동생들과 나누어 먹었습니다.
-        '오늘을 견디면 반드시 밝은 내일이 올 거야!'라는 믿음으로 끝까지 포기하지 않았습니다."
+        “전쟁 통에 부모님을 잃고 어린 동생 둘을 데리고 부산 역전으로 내려왔습니다.<br>
+        제 몸집만 한 무거운 구두통을 메고 하루 종일 뛰어다니며 어른들의 군화를 닦았지요.<br>
+        손은 새까만 약으로 물들고 발은 부르텄지만, 번 푼돈으로 주먹밥을 사서 더 어린 동생들의 입에 넣어주었습니다.<br>
+        ‘오늘을 버티면 반드시 밝은 내일이 온다’는 믿음 하나로 끝내 포기하지 않았습니다.”
       `,
-      lesson: '아무리 큰 어려움이 닥쳐도 꿋꿋이 일어서며, 나보다 더 힘든 이웃을 배려하는 따뜻한 나눔이 진정한 평화의 시작입니다.'
+      lesson: '아무리 가혹한 시련 앞에서도 좌절하지 않고, 나보다 더 힘든 이웃을 돌보는 따뜻한 연대가 진정한 삶의 평화를 일굽니다.'
     },
     merchant: {
       name: '국제시장 상인',
-      badge: '따뜻한 연대 (공동체 회복 부문)',
-      icon: '🍎',
-      role: '마을의 온기와 경제를 되살린 어머니·아버지',
+      badge: '공동체 회복 부문 (서민 경제의 심장)',
+      role: '잿더미 위에서 장터를 열고 서민의 생계를 지킨 어머니·아버지',
       story: `
-        "잿더미가 된 부산 국제시장 한쪽에 사과 궤짝을 놓고 미군 보급 물품과 남새(채소)를 팔기 시작했습니다.
-        돈이 없는 이재민에게는 덤으로 보리쌀을 한 움큼 더 쥐여주었고, 굶주린 아이들에게는 국수를 말아주었습니다.<br>
-        서로의 눈물을 닦아주고 장사를 돕다 보니, 어느새 시장은 활기를 되찾고 대한민국 경제를 다시 뛰게 한 심장이 되었습니다."
+        “모든 것이 불타버린 부산 국제시장 골목에 사과 궤짝을 놓고 미군 보급 물품과 남새를 팔기 시작했습니다.<br>
+        돈이 없는 피란민에게는 덤으로 보리쌀 한 됫박을 더 쥐여주었고, 굶주린 아이들에게는 따끈한 국수를 말아주었습니다.<br>
+        서로의 눈물을 닦아주며 장사를 돕다 보니, 잿더미였던 시장은 활기를 되찾고 대한민국 경제를 다시 뛰게 한 심장이 되었습니다.”
       `,
-      lesson: '공동체의 아픔을 함께 나누고 서로의 손을 잡아주는 연대의 힘이 무너진 일상을 회복하는 가장 큰 원동력이었습니다.'
+      lesson: '공동체의 아픔을 함께 짊어지고 서로의 손을 맞잡아준 상인들의 끈질긴 생명력이 무너진 나라를 다시 일으켜 세웠습니다.'
     },
     teacher: {
-      name: '천막학교 선생님',
-      badge: '미래의 등불 (교육 및 평화 교육 부문)',
-      icon: '📚',
-      role: '어린이의 마음에 심은 평화의 씨앗',
+      name: '천막학교 교사',
+      badge: '교육 및 평화 부문 (미래의 등불)',
+      role: '포탄 상자를 책상 삼아 배움의 불씨를 지킨 참스승',
       story: `
-        "교실도 책상도 다 불타버렸지만, 미군 천막을 빌려 흙바닥 위에 작은 학교를 열었습니다.
-        공책이 부족해 시멘트 포대 종이에 글을 썼고, 나뭇가지로 흙에 한글을 쓰며 아이들을 가르쳤습니다.<br>
-        '전쟁은 부서진 건물을 남겼지만, 너희들의 꿈은 그 누구도 부술 수 없단다.'
-        아이들의 초롱초롱한 눈망울에서 평화로운 미래 대한민국의 희망을 보았습니다."
+        “교실도 책상도 다 잃었지만, 군용 천막을 빌려 흙바닥 위에 작은 학교를 세웠습니다.<br>
+        시멘트 포대 종이에 글을 썼고, 나뭇가지로 마당 흙에 한글 자모를 쓰며 아이들을 가르쳤습니다.<br>
+        ‘포탄은 건물을 무너뜨릴 수 있어도, 너희의 가슴속 꿈은 결코 부술 수 없단다.’<br>
+        배움을 갈망하던 아이들의 초롱초롱한 눈망울에서 평화로운 미래 대한민국의 희망을 보았습니다.”
       `,
-      lesson: '배움을 향한 열정과 다음 세대에게 평화의 가치를 가르치는 교육이 오늘날 번영한 대한민국의 튼튼한 뿌리가 되었습니다.'
+      lesson: '어떠한 절망 속에서도 중단되지 않았던 교육에 대한 열정과 다음 세대를 향한 사랑이 오늘날 번영한 대한민국의 뿌리가 되었습니다.'
+    }
+  };
+
+  // 단계별 날짜 태그 및 부제 데이터 (화면 상단 Dossier Subbar 갱신용)
+  const STAGE_META = {
+    intro: {
+      date: '1950년 6월 25일 — 서울',
+      subtitle: '프롤로그: 평범했던 어느 날'
+    },
+    stage1: {
+      date: '1951년 1월 4일 — 부산 피란민 마을',
+      subtitle: '제1구역: 혹한 속 생존과 연결'
+    },
+    stage2: {
+      date: '1952년 8월 15일 — 재건 광장과 국제시장',
+      subtitle: '제2구역: 잿더미를 딛고 일어선 일상'
+    },
+    stage3: {
+      date: '1953년 7월 27일 — 판문점 휴전 협정',
+      subtitle: '제3구역: 내가 걸어갈 역사의 길'
+    },
+    stage4: {
+      date: '2026년 오늘날 — 평화의 약속',
+      subtitle: '에필로그: 기억을 딛고 평화를 꽃피우다'
     }
   };
 
   // ==========================================================================
-  // 2. Web Audio API 신시사이저 (효과음)
+  // 2. Web Audio API 신시사이저 (역사 효과음)
   // ==========================================================================
   let audioCtx = null;
 
@@ -114,107 +131,103 @@
     }
   }
 
-  // 간단한 클릭음
+  // 문서 셔터 및 버튼 클릭음
   function playClickSound() {
     if (!gameState.soundEnabled || !audioCtx) return;
     try {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(440, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.06);
       gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.08);
-    } catch (e) {
-      console.warn('Audio play failed', e);
-    }
-  }
-
-  // 성공 효과음 (상승 아르페지오)
-  function playSuccessSound() {
-    if (!gameState.soundEnabled || !audioCtx) return;
-    try {
-      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-      notes.forEach((freq, idx) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.09);
-        gain.gain.setValueAtTime(0, audioCtx.currentTime + idx * 0.09);
-        gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + idx * 0.09 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.09 + 0.25);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.09);
-        osc.stop(audioCtx.currentTime + idx * 0.09 + 0.25);
-      });
-    } catch (e) {
-      console.warn('Success sound error', e);
-    }
-  }
-
-  // 자물쇠 딸깍 해제음
-  function playUnlockSound() {
-    if (!gameState.soundEnabled || !audioCtx) return;
-    try {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-      osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.06);
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.2);
+      osc.stop(audioCtx.currentTime + 0.06);
     } catch (e) {}
   }
 
-  // 붉은 인장 도장 찍는 쿵 소리
+  // 성공 및 미션 완수 화음 (차분한 클래식 아르페지오)
+  function playSuccessSound() {
+    if (!gameState.soundEnabled || !audioCtx) return;
+    try {
+      const notes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+      notes.forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.08);
+        gain.gain.setValueAtTime(0, audioCtx.currentTime + idx * 0.08);
+        gain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + idx * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.08 + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + idx * 0.08);
+        osc.stop(audioCtx.currentTime + idx * 0.08 + 0.35);
+      });
+    } catch (e) {}
+  }
+
+  // 붉은 인장 도장 날인음 (쿵- 소리)
   function playStampSound() {
     if (!gameState.soundEnabled || !audioCtx) return;
     try {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(140, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 0.28);
+      gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.28);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.25);
+      osc.stop(audioCtx.currentTime + 0.28);
     } catch (e) {}
   }
 
-  // 라디오 주파수 맞췄을 때 맑은 차임벨 소리
+  // 라디오 주파수 조율 차임음
   function playRadioChime() {
     if (!gameState.soundEnabled || !audioCtx) return;
     try {
-      const notes = [659.25, 880, 1174.66]; // E5, A5, D6
+      const notes = [587.33, 739.99, 880, 1174.66]; // D5, F#5, A5, D6
       notes.forEach((freq, idx) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.12);
-        gain.gain.setValueAtTime(0.18, audioCtx.currentTime + idx * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.12 + 0.5);
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.14, audioCtx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + idx * 0.1 + 0.45);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
-        osc.start(audioCtx.currentTime + idx * 0.12);
-        osc.stop(audioCtx.currentTime + idx * 0.12 + 0.5);
+        osc.start(audioCtx.currentTime + idx * 0.1);
+        osc.stop(audioCtx.currentTime + idx * 0.1 + 0.45);
       });
     } catch (e) {}
   }
 
+  // 통행 허가 딸깍 해제음
+  function playUnlockSound() {
+    if (!gameState.soundEnabled || !audioCtx) return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+      osc.frequency.setValueAtTime(520, audioCtx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.18);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.18);
+    } catch (e) {}
+  }
+
   // ==========================================================================
-  // 3. UI 및 진행 제어 (Step Navigation)
+  // 3. UI 네비게이션 & 진행 단계 제어
   // ==========================================================================
   const screens = {
     intro: document.getElementById('screenIntro'),
@@ -224,9 +237,18 @@
     stage4: document.getElementById('screenStage4')
   };
 
-  const stepItems = document.querySelectorAll('.step-item');
-  const progressBar = document.getElementById('progressBar');
-  const timerPill = document.getElementById('playTimer');
+  const navStepNodes = {
+    intro: document.getElementById('navStepIntro'),
+    stage1: document.getElementById('navStepStage1'),
+    stage2: document.getElementById('navStepStage2'),
+    stage3: document.getElementById('navStepStage3'),
+    stage4: document.getElementById('navStepStage4')
+  };
+
+  const dossierDateTag = document.getElementById('dossierDateTag');
+  const dossierSubtitle = document.getElementById('dossierSubtitle');
+  const playTimer = document.getElementById('playTimer');
+  const clueBadge = document.getElementById('clueBadge');
   const soundToggleBtn = document.getElementById('soundToggleBtn');
   const soundIcon = document.getElementById('soundIcon');
   const soundLabel = document.getElementById('soundLabel');
@@ -236,20 +258,25 @@
     const stepOrder = ['intro', 'stage1', 'stage2', 'stage3', 'stage4'];
     const activeIdx = stepOrder.indexOf(targetStep);
 
-    // Progress bar fill width
-    const percent = ((activeIdx) / (stepOrder.length - 1)) * 100;
-    progressBar.style.setProperty('--progress-width', `${Math.max(10, percent)}%`);
-
-    stepItems.forEach((item, idx) => {
-      item.classList.remove('active', 'completed');
+    // 상단 스텝 노드 상태 변경
+    stepOrder.forEach((stepKey, idx) => {
+      const node = navStepNodes[stepKey];
+      if (!node) return;
+      node.classList.remove('active', 'completed');
       if (idx < activeIdx) {
-        item.classList.add('completed');
+        node.classList.add('completed');
       } else if (idx === activeIdx) {
-        item.classList.add('active');
+        node.classList.add('active');
       }
     });
 
-    // Screen visibility toggle
+    // 화면 상단 Dossier 서브바 텍스트 갱신
+    if (STAGE_META[targetStep]) {
+      dossierDateTag.textContent = STAGE_META[targetStep].date;
+      dossierSubtitle.textContent = STAGE_META[targetStep].subtitle;
+    }
+
+    // 화면 전환
     Object.keys(screens).forEach(key => {
       if (key === targetStep) {
         screens[key].classList.add('active');
@@ -259,7 +286,12 @@
       }
     });
 
-    // 1단계, 2단계 진입 시 셔플 (1대1 매칭 방지)
+    // 단계 진입 시 단서 해금 확인
+    if (targetStep === 'stage1') unlockClue(2);
+    if (targetStep === 'stage2') unlockClue(3);
+    if (targetStep === 'stage3') unlockClue(4);
+
+    // 셔플 로직 적용
     if (targetStep === 'stage1' && gameState.stage1.helpedTargets.size === 0) {
       shuffleReliefElements();
     } else if (targetStep === 'stage2' && gameState.stage2.placedTiles.size === 0) {
@@ -267,33 +299,71 @@
     }
   }
 
-  // 타이머 작동
+  // 단서 해금 처리
+  function unlockClue(clueNum) {
+    gameState.unlockedClues.add(clueNum);
+    clueBadge.textContent = `${gameState.unlockedClues.size}/4`;
+
+    const clueCard = document.getElementById(`clueCard${clueNum}`);
+    const clueStatus = document.getElementById(`clueStatus${clueNum}`);
+    if (clueCard && clueStatus) {
+      clueCard.classList.add('unlocked');
+      clueStatus.textContent = `기록 0${clueNum} (확보 완료)`;
+    }
+  }
+
+  // 타이머 가동
   function startTimer() {
     if (gameState.timerInterval) return;
     gameState.timerInterval = setInterval(() => {
       gameState.timerSeconds++;
       const mins = String(Math.floor(gameState.timerSeconds / 60)).padStart(2, '0');
       const secs = String(gameState.timerSeconds % 60).padStart(2, '0');
-      timerPill.textContent = `⏱️ ${mins}:${secs}`;
+      playTimer.textContent = `기록 ${mins}:${secs}`;
     }, 1000);
   }
 
-  // 사운드 토글
+  // 음향 온/오프
   soundToggleBtn.addEventListener('click', () => {
     initAudio();
     gameState.soundEnabled = !gameState.soundEnabled;
     if (gameState.soundEnabled) {
-      soundIcon.textContent = '🔊';
-      soundLabel.textContent = '음향 켜짐';
+      soundIcon.textContent = '📢';
+      soundLabel.textContent = '소리 켬';
       playClickSound();
     } else {
       soundIcon.textContent = '🔇';
-      soundLabel.textContent = '음향 꺼짐';
+      soundLabel.textContent = '소리 끔';
     }
   });
 
+  // 단서 수첩 모달 제어
+  const clueNotebookBtn = document.getElementById('clueNotebookBtn');
+  const clueModal = document.getElementById('clueModal');
+  const closeClueModalBtn = document.getElementById('closeClueModalBtn');
+  const closeClueModalBtn2 = document.getElementById('closeClueModalBtn2');
+
+  function openClueModal() {
+    initAudio();
+    playClickSound();
+    clueModal.style.display = 'flex';
+  }
+
+  function closeClueModal() {
+    initAudio();
+    playClickSound();
+    clueModal.style.display = 'none';
+  }
+
+  clueNotebookBtn.addEventListener('click', openClueModal);
+  closeClueModalBtn.addEventListener('click', closeClueModal);
+  closeClueModalBtn2.addEventListener('click', closeClueModal);
+  clueModal.addEventListener('click', (e) => {
+    if (e.target === clueModal) closeClueModal();
+  });
+
   // ==========================================================================
-  // 4. 인트로 화면 이벤트
+  // 4. 인트로 화면: 탐구자 등록 & 시작
   // ==========================================================================
   const studentForm = document.getElementById('studentForm');
   const schoolClassInput = document.getElementById('schoolClass');
@@ -305,7 +375,7 @@
     playSuccessSound();
 
     const school = schoolClassInput.value.trim() || '평화초등학교 6학년';
-    const name = studentNameInput.value.trim() || '어린이 평화지킴이';
+    const name = studentNameInput.value.trim() || '역사 탐구자';
 
     gameState.student.schoolClass = school;
     gameState.student.name = name;
@@ -315,27 +385,24 @@
   });
 
   // ==========================================================================
-  // 5. 1단계: 판자방 탈출 (구호물품 나눔 & 라디오 주파수)
+  // 5. 1단계: 생존 (구호물자 배급 & 진공관 비상 라디오)
   // ==========================================================================
-  // (1) 구호물품 나눔
   const itemCards = document.querySelectorAll('.item-card');
   const neighborCards = document.querySelectorAll('.neighbor-card');
   const reliefStatus = document.getElementById('reliefStatus');
 
-  // 물품과 알맞은 이웃 매핑
   const MATCHING_PAIRS = {
-    blanket: 'baby',     // 누비담요 -> 추위에 떠는 갓난아이
-    food: 'hungry',      // 주먹밥 -> 굶주린 남매
-    medicine: 'elder'    // 상비약 -> 다리 다친 할아버지
+    blanket: 'baby',     // 솜 누비이불 -> 갓난아이 품은 어머니
+    food: 'hungry',      // 전시 비상 식량 -> 동생 지키는 소년
+    medicine: 'elder'    // 응급 구호 의약품 -> 피란길 부상 노인
   };
 
   const NEIGHBOR_THANKS = {
-    baby: '👶 "담요 덕분에 아기가 따뜻하게 잠들었어요. 감사합니다!"',
-    hungry: '👧 "따뜻한 주먹밥 덕분에 배고픔을 달랬어요. 고맙습니다!"',
-    elder: '👴 "상비약으로 상처를 닦으니 한결 살 것 같소. 은혜를 잊지 않겠네."'
+    baby: '"눈보라를 막아줄 따뜻한 이불 덕분에 아기가 평온하게 숨을 쉽니다. 깊이 감사드립니다."',
+    hungry: '"며칠 동안 굶주렸던 동생의 얼굴에 비로소 생기가 돕니다. 평생 잊지 않겠습니다."',
+    elder: '"파편 상처를 소독하고 싸매니 이제야 살 것 같소. 이 고마운 은혜를 어찌 갚으리."'
   };
 
-  // 1단계 요소 섞기 함수 (1번째-1번째, 2번째-2번째 일치 방지)
   function shuffleReliefElements() {
     const itemsRow = document.querySelector('.relief-items-row');
     const neighborsRow = document.querySelector('.neighbors-row');
@@ -353,7 +420,6 @@
       return copy;
     }
 
-    // 1대1 인덱스 일치가 하나도 없도록 최대 20번 섞기 시도
     let attempts = 0;
     while (attempts < 25) {
       items = shuffleArr(items);
@@ -373,7 +439,6 @@
     neighbors.forEach(el => neighborsRow.appendChild(el));
   }
 
-  // 2단계 가치 타일 섞기 함수 (슬롯 순서와 일치 방지)
   function shuffleTiles() {
     const tilesPool = document.getElementById('tilesPool');
     if (!tilesPool) return;
@@ -401,9 +466,10 @@
     tiles.forEach(el => tilesPool.appendChild(el));
   }
 
-  // 초기 로드 시 1회 섞기 실행
+  // 초기 셔플 1회 실행
   shuffleReliefElements();
   shuffleTiles();
+  unlockClue(1);
 
   itemCards.forEach(card => {
     card.addEventListener('click', () => {
@@ -424,45 +490,40 @@
       if (gameState.stage1.helpedTargets.has(targetId)) return;
 
       if (!gameState.stage1.selectedItem) {
-        alert('먼저 전해드릴 [구호 물품]을 위에서 선택해 주세요!');
+        alert('먼저 상단에서 전달할 [전시 구호물자]를 선택해 주십시오.');
         return;
       }
 
       // 일치 검사
       if (MATCHING_PAIRS[gameState.stage1.selectedItem] === targetId) {
-        // 성공
         playSuccessSound();
         gameState.stage1.helpedTargets.add(targetId);
 
-        // 물품 상태 변경
         const usedItemCard = document.getElementById(`item-${gameState.stage1.selectedItem}`);
         usedItemCard.classList.remove('selected');
         usedItemCard.classList.add('used');
         usedItemCard.disabled = true;
 
-        // 이웃 카드 상태 변경
         card.classList.add('helped');
         card.querySelector('.target-speech').textContent = NEIGHBOR_THANKS[targetId];
-        card.querySelector('.target-state').textContent = '온기 전달 완료! 💛';
+        card.querySelector('.target-state').textContent = '지원 완료 (온기 전달)';
 
         gameState.stage1.selectedItem = null;
 
-        // 현황 갱신
         reliefStatus.textContent = `${gameState.stage1.helpedTargets.size} / 3 완료`;
         if (gameState.stage1.helpedTargets.size === 3) {
-          reliefStatus.textContent = '3 / 3 나눔 완료! ✨';
+          reliefStatus.textContent = '3 / 3 배급 완료';
           reliefStatus.classList.add('done');
           checkStage1Completion();
         }
       } else {
-        // 불일치 안내
         playClickSound();
-        alert('이 이웃에게는 다른 구호 물품이 더 급해 보여요. 물품의 설명을 다시 읽어보고 골라보세요!');
+        alert('이 이웃에게는 다른 구호물자가 더욱 절박해 보입니다. 물자의 용도를 다시 검토해 보십시오.');
       }
     });
   });
 
-  // (2) 라디오 주파수 맞추기
+  // (2) 라디오 주파수 조절
   const freqSlider = document.getElementById('freqSlider');
   const freqNeedle = document.getElementById('freqNeedle');
   const currentFreq = document.getElementById('currentFreq');
@@ -474,43 +535,40 @@
   freqSlider.addEventListener('input', (e) => {
     initAudio();
     const val = parseFloat(e.target.value);
-    // 슬라이더 바늘 위치 (min 160 ~ max 230)
     const percent = ((val - 160) / (230 - 160)) * 100;
     freqNeedle.style.left = `${percent}%`;
-    currentFreq.innerHTML = `현재 주파수: <strong>${val.toFixed(1)} MHz</strong>`;
+    currentFreq.innerHTML = `현재 수신 주파수: <strong>${val.toFixed(1)} MHz</strong>`;
 
-    // 정답 주파수: 195.3 MHz (오차범위 ±0.6)
+    // 정답 주파수: 195.3 MHz
     if (Math.abs(val - 195.3) <= 0.6) {
       if (!gameState.stage1.radioTuned) {
         gameState.stage1.radioTuned = true;
         playRadioChime();
         radioLed.classList.add('tuned');
         radioMessageBox.classList.add('broadcast-active');
-        radioStatus.textContent = '평화 방송 수신 완료! 📻';
+        radioStatus.textContent = '평화 방송 수신 완료';
         radioStatus.classList.add('done');
         radioBroadcastText.innerHTML = `
-          <strong>📢 [1953년 7월 긴급 평화 방송]</strong><br>
-          "지지직... 국민 여러분, 포성이 마침내 멎었습니다!<br>
-          비록 모든 것이 부서졌지만, 서로의 손을 맞잡고 폐허 위에 다시 평화로운 일상을 세웁시다!"
+          <strong>📢 [1953년 7월 긴급 평화 방송 전문]</strong><br>
+          “지지직... 국민 여러분, 3년 1개월간 계속되었던 포성이 마침내 멎었습니다!<br>
+          비록 모든 것이 부서졌지만 서로의 손을 맞잡고 폐허 위에 다시 평화로운 일상을 세웁시다!”
         `;
         checkStage1Completion();
       }
     } else {
-      if (gameState.stage1.radioTuned) {
-        // 약간 벗어났을 때도 너무 엄격하게 풀리지 않도록 유지
-      } else {
+      if (!gameState.stage1.radioTuned) {
         radioLed.classList.remove('tuned');
         radioMessageBox.classList.remove('broadcast-active');
         if (Math.abs(val - 195.3) <= 4.0) {
-          radioBroadcastText.textContent = '치지직... "...국민... 여러분... 평화..." 신호가 잡힐 듯합니다! 조금만 더 미세하게 돌려보세요!';
+          radioBroadcastText.textContent = '치지직... "...국민... 여러분... 평화..." 전파 신호가 잡힐 듯합니다. 미세하게 조절하십시오.';
         } else {
-          radioBroadcastText.textContent = '치지직... 삐익... 잡음만 들립니다. 주파수를 195.3으로 맞춰보세요!';
+          radioBroadcastText.textContent = '치지직... 삐익... 전파 잡음만 들립니다. 주파수를 195.3 MHz 부근으로 맞추십시오.';
         }
       }
     }
   });
 
-  // 1단계 탈출구 해제 확인
+  // 1단계 통행 통제 해제
   const doorCard = document.getElementById('doorCard');
   const doorIcon = document.getElementById('doorIcon');
   const doorTitle = document.getElementById('doorTitle');
@@ -522,12 +580,11 @@
       if (!gameState.stage1.isDoorUnlocked) {
         gameState.stage1.isDoorUnlocked = true;
         playUnlockSound();
-        doorIcon.textContent = '🔓';
-        doorTitle.textContent = '희망의 열쇠를 찾았습니다! ✨';
-        doorSub.textContent = '나눔의 온기와 평화의 소리가 문을 열었습니다. 이제 아래 버튼을 눌러 마을 광장으로 나가보세요!';
+        doorIcon.textContent = '통행 허가';
+        doorTitle.textContent = '재건 구역 통행 허가 획득';
+        doorSub.textContent = '구호 물자 나눔과 평화 소식 수신이 확인되었습니다. 아래 버튼을 눌러 재건의 현장으로 이동하십시오.';
         doorCard.classList.add('unlocked');
         stage1NextBtn.disabled = false;
-        stage1NextBtn.classList.add('pulse');
       }
     }
   }
@@ -539,7 +596,7 @@
   });
 
   // ==========================================================================
-  // 6. 2단계: 마을 광장 재건 (평화 가치 타일 퍼즐)
+  // 6. 2단계: 생계 (마을 광장 재건 가치 패 맞추기)
   // ==========================================================================
   const valueTiles = document.querySelectorAll('.value-tile');
   const boardSlots = document.querySelectorAll('.board-slot');
@@ -557,7 +614,6 @@
       gameState.stage2.selectedTile = tile.getAttribute('data-value');
     });
 
-    // 드래그 지원
     tile.addEventListener('dragstart', (e) => {
       gameState.stage2.selectedTile = tile.getAttribute('data-value');
       e.dataTransfer.setData('text/plain', tile.getAttribute('data-value'));
@@ -571,7 +627,7 @@
       if (slot.classList.contains('filled')) return;
 
       if (!gameState.stage2.selectedTile) {
-        alert('먼저 왼쪽에서 올바른 [평화 가치 타일]을 클릭해 주세요!');
+        alert('먼저 왼쪽에서 배치할 [핵심 가치 패]를 선택해 주십시오.');
         return;
       }
 
@@ -579,7 +635,7 @@
         placeTileInSlot(gameState.stage2.selectedTile, slot);
       } else {
         playClickSound();
-        alert('이 자리의 약속 설명과 어울리는 다른 가치 타일을 골라보세요!');
+        alert('이 조항의 취지와 어울리는 다른 가치 패를 선택해 주십시오.');
       }
     });
 
@@ -605,30 +661,26 @@
     matchedTile.classList.remove('selected');
     matchedTile.classList.add('placed');
 
-    // 슬롯 내용 변경
     slotElement.classList.add('filled');
     const tileTitle = matchedTile.querySelector('.tile-title').textContent;
-    const tileIcon = matchedTile.querySelector('.tile-icon').textContent;
     const tileSub = matchedTile.querySelector('.tile-sub').textContent;
 
     slotElement.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 2rem;">${tileIcon}</span>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <span style="border: 1.5px solid var(--archive-green); color: var(--archive-green); padding: 3px 8px; border-radius: 3px; font-weight: 800; font-size: 0.8rem; font-family: var(--font-serif);">결의 비준</span>
         <div>
-          <strong style="color: var(--peace-green); font-size: 1.1rem;">【약속 완성】 ${tileTitle}</strong>
-          <p style="color: var(--sepia-dark); font-size: 0.85rem; margin-top: 2px;">${tileSub} - 약속이 굳건히 세워졌습니다!</p>
+          <strong style="color: var(--archive-green); font-size: 1.05rem; font-family: var(--font-serif);">${tileTitle}</strong>
+          <p style="color: var(--ink-secondary); font-size: 0.85rem; margin-top: 2px;">${tileSub} — 마을 공동체 결의가 확립되었습니다.</p>
         </div>
       </div>
     `;
 
     gameState.stage2.selectedTile = null;
 
-    // 모든 타일 배치 완료 검사
     if (gameState.stage2.placedTiles.size === 3) {
       gameState.stage2.isRebuilt = true;
       rebuildBanner.classList.add('active');
       stage2NextBtn.disabled = false;
-      stage2NextBtn.classList.add('pulse');
     }
   }
 
@@ -639,11 +691,10 @@
   });
 
   // ==========================================================================
-  // 7. 3단계: 평화의 선택 (4대 직업군 선택)
+  // 7. 3단계: 휴전 (1953년 7월, 역사가 된 4인의 선택)
   // ==========================================================================
   const jobCards = document.querySelectorAll('.job-card');
   const jobDetailBox = document.getElementById('jobDetailBox');
-  const detailIcon = document.getElementById('detailIcon');
   const detailTitle = document.getElementById('detailTitle');
   const detailRole = document.getElementById('detailRole');
   const detailStory = document.getElementById('detailStory');
@@ -661,8 +712,7 @@
       card.classList.add('active');
 
       const data = JOB_DATA[jobKey];
-      detailIcon.textContent = data.icon;
-      detailTitle.textContent = `${data.name}의 발자취`;
+      detailTitle.textContent = `${data.name}의 역사적 발자취`;
       detailRole.textContent = data.role;
       detailStory.innerHTML = data.story;
       detailLesson.textContent = data.lesson;
@@ -679,29 +729,39 @@
   });
 
   // ==========================================================================
-  // 8. 4단계: 오늘날 나의 평화 다짐 & 임명장 생성
+  // 8. 4단계: 결말 (오늘날 나의 평화 서약 & 공식 임명장)
   // ==========================================================================
   const customPledgeInput = document.getElementById('customPledgeText');
+  const pledgeCharCount = document.getElementById('pledgeCharCount');
   const presetBadges = document.querySelectorAll('.badge-btn');
   const makeCertBtn = document.getElementById('makeCertBtn');
   const certificateArea = document.getElementById('certificateArea');
 
-  // 추천 다짐 문장 클릭 시 자동 입력
+  function updateCharCount() {
+    if (customPledgeInput && pledgeCharCount) {
+      pledgeCharCount.textContent = `${customPledgeInput.value.length} / 120자`;
+    }
+  }
+
+  if (customPledgeInput) {
+    customPledgeInput.addEventListener('input', updateCharCount);
+  }
+
   presetBadges.forEach(btn => {
     btn.addEventListener('click', () => {
       initAudio();
       playClickSound();
       customPledgeInput.value = btn.getAttribute('data-preset');
+      updateCharCount();
       customPledgeInput.focus();
     });
   });
 
-  // 임명장 생성
   makeCertBtn.addEventListener('click', () => {
     initAudio();
     const customText = customPledgeInput.value.trim();
     if (!customText) {
-      alert('나만의 평화 한 줄 다짐을 적어주세요! (아래 추천 문장을 누르셔도 좋습니다.)');
+      alert('나만의 평화 실천 서약문을 작성해 주십시오. (아래 추천 양식을 누르셔도 좋습니다.)');
       customPledgeInput.focus();
       return;
     }
@@ -709,11 +769,9 @@
     playStampSound();
     gameState.stage4.customPledge = customText;
 
-    // 체크된 항목들 취합
     const checkedBoxes = document.querySelectorAll('input[name="peacePledge"]:checked');
     gameState.stage4.selectedPledges = Array.from(checkedBoxes).map(cb => cb.value);
 
-    // 임명장 DOM 채우기
     const student = gameState.student;
     const selectedJobKey = gameState.stage3.selectedJob || 'soldier';
     const jobData = JOB_DATA[selectedJobKey];
@@ -723,35 +781,26 @@
     document.getElementById('certJobTitle').textContent = jobData.badge;
     document.getElementById('certPledgeContent').textContent = `"${customText}"`;
 
-    // 오늘 날짜 표시
     const now = new Date();
     const dateStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
     document.getElementById('certDate').textContent = dateStr;
 
-    // 일련번호 생성 (랜덤 난수)
-    const randomSeq = String(Math.floor(1000 + Math.random() * 9000));
-    document.getElementById('certNumber').textContent = `제 ${now.getFullYear()}-평화-${randomSeq}호`;
-
-    // 임명장 화면 노출
     certificateArea.style.display = 'block';
     certificateArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // 축하 팡파레 효과음
     setTimeout(() => {
       playSuccessSound();
     }, 400);
   });
 
-  // 인쇄 및 PDF 저장 버튼
   document.getElementById('printCertBtn').addEventListener('click', () => {
     window.print();
   });
 
-  // 처음부터 다시 하기
   document.getElementById('restartBtn').addEventListener('click', () => {
     initAudio();
     playClickSound();
-    if (confirm('처음 화면으로 돌아가 다른 평화의 길을 체험해 보시겠습니까?')) {
+    if (confirm('처음 화면으로 돌아가 다른 역사적 역할과 선택을 탐구하시겠습니까?')) {
       location.reload();
     }
   });
