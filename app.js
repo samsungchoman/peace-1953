@@ -471,7 +471,67 @@
   shuffleTiles();
   unlockClue(1);
 
+  // 공통 구호물자 전달 처리 함수
+  function deliverReliefSupply(itemType, targetId, cardElement) {
+    if (!itemType || !targetId || !cardElement) return;
+    if (gameState.stage1.helpedTargets.has(targetId)) return;
+
+    if (MATCHING_PAIRS[itemType] === targetId) {
+      playSuccessSound();
+      gameState.stage1.helpedTargets.add(targetId);
+
+      const usedItemCard = document.getElementById(`item-${itemType}`);
+      if (usedItemCard) {
+        usedItemCard.classList.remove('selected', 'dragging');
+        usedItemCard.classList.add('used');
+        usedItemCard.setAttribute('draggable', 'false');
+        usedItemCard.disabled = true;
+      }
+
+      cardElement.classList.add('helped');
+      cardElement.classList.remove('drag-over');
+      cardElement.querySelector('.target-speech').textContent = NEIGHBOR_THANKS[targetId];
+      cardElement.querySelector('.target-state').textContent = '지원 완료 (온기 전달)';
+
+      gameState.stage1.selectedItem = null;
+      itemCards.forEach(c => c.classList.remove('selected'));
+
+      reliefStatus.textContent = `${gameState.stage1.helpedTargets.size} / 3 완료`;
+      if (gameState.stage1.helpedTargets.size === 3) {
+        reliefStatus.textContent = '3 / 3 배급 완료';
+        reliefStatus.classList.add('done');
+        checkStage1Completion();
+      }
+    } else {
+      playClickSound();
+      cardElement.classList.remove('drag-over');
+      alert('이 이웃에게는 다른 구호물자가 더욱 절박해 보입니다. 물자의 용도를 다시 검토해 보십시오.');
+    }
+  }
+
+  // 1) 데스크톱 마우스 드래그 앤 드롭
   itemCards.forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      if (card.classList.contains('used')) {
+        e.preventDefault();
+        return;
+      }
+      initAudio();
+      const itemType = card.getAttribute('data-item');
+      gameState.stage1.selectedItem = itemType;
+      e.dataTransfer.setData('text/plain', itemType);
+      e.dataTransfer.effectAllowed = 'move';
+      card.classList.add('dragging');
+      itemCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      neighborCards.forEach(n => n.classList.remove('drag-over'));
+    });
+
+    // 클릭 선택 지원 (선택 후 클릭 매칭도 병행 가능)
     card.addEventListener('click', () => {
       initAudio();
       if (card.classList.contains('used')) return;
@@ -483,43 +543,124 @@
     });
   });
 
+  // 2) 모바일 / 터치 스크린 드래그 지원
+  let touchDraggedItem = null;
+  let touchClone = null;
+  let currentTouchTarget = null;
+
+  itemCards.forEach(card => {
+    card.addEventListener('touchstart', (e) => {
+      if (card.classList.contains('used')) return;
+      initAudio();
+      touchDraggedItem = card.getAttribute('data-item');
+      gameState.stage1.selectedItem = touchDraggedItem;
+      card.classList.add('selected', 'dragging');
+
+      const touch = e.touches[0];
+      touchClone = card.cloneNode(true);
+      touchClone.style.position = 'fixed';
+      touchClone.style.left = `${touch.clientX - 40}px`;
+      touchClone.style.top = `${touch.clientY - 30}px`;
+      touchClone.style.width = `${card.offsetWidth}px`;
+      touchClone.style.opacity = '0.85';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.zIndex = '9999';
+      touchClone.style.boxShadow = '0 8px 24px rgba(0,0,0,0.25)';
+      document.body.appendChild(touchClone);
+    }, { passive: true });
+
+    card.addEventListener('touchmove', (e) => {
+      if (!touchClone) return;
+      const touch = e.touches[0];
+      touchClone.style.left = `${touch.clientX - 40}px`;
+      touchClone.style.top = `${touch.clientY - 30}px`;
+
+      const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetCard = elem ? elem.closest('.neighbor-card') : null;
+
+      if (currentTouchTarget && currentTouchTarget !== targetCard) {
+        currentTouchTarget.classList.remove('drag-over');
+      }
+
+      if (targetCard && !targetCard.classList.contains('helped')) {
+        targetCard.classList.add('drag-over');
+        currentTouchTarget = targetCard;
+      } else {
+        currentTouchTarget = null;
+      }
+    }, { passive: true });
+
+    card.addEventListener('touchend', () => {
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      card.classList.remove('dragging');
+
+      if (currentTouchTarget && touchDraggedItem) {
+        currentTouchTarget.classList.remove('drag-over');
+        const targetId = currentTouchTarget.getAttribute('data-target');
+        deliverReliefSupply(touchDraggedItem, targetId, currentTouchTarget);
+      }
+      touchDraggedItem = null;
+      currentTouchTarget = null;
+    });
+
+    card.addEventListener('touchcancel', () => {
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      card.classList.remove('dragging');
+      if (currentTouchTarget) {
+        currentTouchTarget.classList.remove('drag-over');
+      }
+      touchDraggedItem = null;
+      currentTouchTarget = null;
+    });
+  });
+
+  // 3) 이웃 카드 드롭 & 클릭 이벤트
   neighborCards.forEach(card => {
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    card.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      const targetId = card.getAttribute('data-target');
+      if (!gameState.stage1.helpedTargets.has(targetId)) {
+        card.classList.add('drag-over');
+      }
+    });
+
+    card.addEventListener('dragleave', (e) => {
+      if (!card.contains(e.relatedTarget)) {
+        card.classList.remove('drag-over');
+      }
+    });
+
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      card.classList.remove('drag-over');
+      const targetId = card.getAttribute('data-target');
+      const droppedItem = e.dataTransfer.getData('text/plain') || gameState.stage1.selectedItem;
+      if (!droppedItem) return;
+      deliverReliefSupply(droppedItem, targetId, card);
+    });
+
     card.addEventListener('click', () => {
       initAudio();
       const targetId = card.getAttribute('data-target');
       if (gameState.stage1.helpedTargets.has(targetId)) return;
 
       if (!gameState.stage1.selectedItem) {
-        alert('먼저 상단에서 전달할 [전시 구호물자]를 선택해 주십시오.');
+        alert('전달할 [구호 물품]을 이웃 카드 위로 드래그하거나 먼저 물품을 선택해 주십시오.');
         return;
       }
 
-      // 일치 검사
-      if (MATCHING_PAIRS[gameState.stage1.selectedItem] === targetId) {
-        playSuccessSound();
-        gameState.stage1.helpedTargets.add(targetId);
-
-        const usedItemCard = document.getElementById(`item-${gameState.stage1.selectedItem}`);
-        usedItemCard.classList.remove('selected');
-        usedItemCard.classList.add('used');
-        usedItemCard.disabled = true;
-
-        card.classList.add('helped');
-        card.querySelector('.target-speech').textContent = NEIGHBOR_THANKS[targetId];
-        card.querySelector('.target-state').textContent = '지원 완료 (온기 전달)';
-
-        gameState.stage1.selectedItem = null;
-
-        reliefStatus.textContent = `${gameState.stage1.helpedTargets.size} / 3 완료`;
-        if (gameState.stage1.helpedTargets.size === 3) {
-          reliefStatus.textContent = '3 / 3 배급 완료';
-          reliefStatus.classList.add('done');
-          checkStage1Completion();
-        }
-      } else {
-        playClickSound();
-        alert('이 이웃에게는 다른 구호물자가 더욱 절박해 보입니다. 물자의 용도를 다시 검토해 보십시오.');
-      }
+      deliverReliefSupply(gameState.stage1.selectedItem, targetId, card);
     });
   });
 
@@ -729,7 +870,7 @@
   });
 
   // ==========================================================================
-  // 8. 4단계: 결말 (오늘날 나의 평화 서약 & 공식 임명장)
+  // 8. 4단계: 결말 (오늘날 나의 평화 서약 & 임명장)
   // ==========================================================================
   const customPledgeInput = document.getElementById('customPledgeText');
   const pledgeCharCount = document.getElementById('pledgeCharCount');
