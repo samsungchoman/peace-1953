@@ -80,7 +80,10 @@
         <!-- Archival Framed Photograph -->
         <div class="archival-photo-frame">
           <img src="images/hero_seoul_1950.jpg" alt="1950년 6월, 전쟁이 시작되던 날의 서울 거리" class="archival-photo">
-          <div class="photo-caption-overlay">1950년 6월, 전쟁이 시작되던 날의 서울 거리</div>
+          <div class="photo-caption-overlay">
+            <span class="caption-text">1950년 6월, 전쟁이 시작되던 날의 서울 거리</span>
+            <span class="ai-generated-notice">※ AI를 이용하여 생성한 이미지입니다.</span>
+          </div>
         </div>
 
         <!-- Evocative Historical Quote Box (with left red line) -->
@@ -97,11 +100,11 @@
         <!-- Historical Dossier Registration Section -->
         <div class="dossier-record-box">
           <div class="dossier-record-header">
-            <div class="dossier-emblem">대한민국 역사기록원</div>
+            <div class="dossier-emblem">6·25 평화 역사 아카이브</div>
             <h2 class="dossier-heading">역사 탐구자 신원 기록부 (피란민 대장)</h2>
             <p class="dossier-instruction">
               역사의 현장 속으로 들어가기 전, 탐구자의 정보를 기록해 주세요. 
-              당신의 선택은 1953년 휴전 이후 <strong>‘어린이 평화 시민 임명장’</strong>에 영구 기록됩니다.
+              당신의 선택은 1953년 휴전 이후 <strong>‘어린이 평화 시민 임명장’</strong>에 담기게 됩니다.
             </p>
           </div>
 
@@ -149,7 +152,10 @@
         <!-- Archival Framed Photograph -->
         <div class="archival-photo-frame">
           <img src="images/refugee_camp_1951.jpg" alt="1951년 겨울, 부산 영도 부근 피란민 판잣집 마을과 배급 현장" class="archival-photo">
-          <div class="photo-caption-overlay">1951년 겨울, 부산 영도 부근 피란민 판잣집 마을과 배급 현장</div>
+          <div class="photo-caption-overlay">
+            <span class="caption-text">1951년 겨울, 부산 영도 부근 피란민 판잣집 마을과 배급 현장</span>
+            <span class="ai-generated-notice">※ AI를 이용하여 생성한 이미지입니다.</span>
+          </div>
         </div>
 
         <div class="narrative-quote-box">
@@ -172,30 +178,33 @@
               </div>
               <span class="status-badge" id="reliefStatus">0 / 3 완료</span>
             </div>
-            <p class="panel-desc">아래 구호 물품을 먼저 선택한 후, 가장 절박한 처지에 놓인 이웃을 찾아 전달해 주세요.</p>
+            <p class="panel-desc">아래 구호 물품을 <strong>마우스로 끌어서(드래그)</strong> 가장 절박한 처지에 놓인 이웃에게 전달해 주세요. (클릭하여 선택 후 전달도 가능합니다)</p>
 
             <!-- Relief Items to Pick -->
             <div class="relief-items-row">
-              <button type="button" class="item-card" data-item="food" id="item-food">
+              <button type="button" class="item-card" data-item="food" id="item-food" draggable="true" title="이웃에게 드래그하여 전달하세요">
                 <div class="item-tag-box">식량</div>
                 <div class="item-info">
                   <strong>전시 비상 식량</strong>
                   <span>주먹밥과 미군 비상 건빵 (굶주림 해소)</span>
                 </div>
+                <div class="item-drag-handle" title="드래그 가능">⋮⋮</div>
               </button>
-              <button type="button" class="item-card" data-item="blanket" id="item-blanket">
+              <button type="button" class="item-card" data-item="blanket" id="item-blanket" draggable="true" title="이웃에게 드래그하여 전달하세요">
                 <div class="item-tag-box">방한</div>
                 <div class="item-info">
                   <strong>솜 누비이불</strong>
                   <span>군용 모포와 누비 담요 (혹한 체온 보호)</span>
                 </div>
+                <div class="item-drag-handle" title="드래그 가능">⋮⋮</div>
               </button>
-              <button type="button" class="item-card" data-item="medicine" id="item-medicine">
+              <button type="button" class="item-card" data-item="medicine" id="item-medicine" draggable="true" title="이웃에게 드래그하여 전달하세요">
                 <div class="item-tag-box">의약</div>
                 <div class="item-info">
                   <strong>응급 구호 의약품</strong>
                   <span>소독약과 면 붕대 (피란 부상 치료)</span>
                 </div>
+                <div class="item-drag-handle" title="드래그 가능">⋮⋮</div>
               </button>
             </div>
 
@@ -297,7 +306,10 @@
         <!-- Archival Framed Photograph -->
         <div class="archival-photo-frame">
           <img src="images/rebuild_market_1952.jpg" alt="1952년, 불타버린 시장 터에서 목재를 져 나르며 삶의 터전을 재건하는 시민들" class="archival-photo">
-          <div class="photo-caption-overlay">1952년, 불타버린 시장 터에서 목재를 져 나르며 삶의 터전을 재건하는 시민들</div>
+          <div class="photo-caption-overlay">
+            <span class="caption-text">1952년, 불타버린 시장 터에서 목재를 져 나르며 삶의 터전을 재건하는 시민들</span>
+            <span class="ai-generated-notice">※ AI를 이용하여 생성한 이미지입니다.</span>
+          </div>
         </div>
 
         <div class="narrative-quote-box">
@@ -332,7 +344,7 @@
               <div class="value-tile" draggable="true" data-value="cooperation" id="tile-cooperation">
                 <div class="tile-stamp">기록 III</div>
                 <div class="tile-content">
-                  <span class="tile-title">협동 (울력과 복구)</span>
+                  <span class="tile-title">협동 (함께 힘 모아 복구하기)</span>
                   <span class="tile-sub">"무너진 교량과 판자 학교를 손잡고 함께 일으켜 세운다"</span>
                 </div>
               </div>
@@ -348,7 +360,7 @@
                 <div class="slot-placeholder">
                   <span class="slot-num">제1조</span>
                   <strong>공동 복구와 협동</strong>
-                  <p>혼자만의 힘으로는 세울 수 없는 무너진 다리와 천막 교실을 이웃과 울력(품앗이)으로 함께 복구한다.</p>
+                  <p>혼자만의 힘으로는 세울 수 없는 무너진 다리와 천막 교실을 이웃과 다 함께 힘을 모아(품앗이) 복구한다.</p>
                   <span class="slot-click-hint">[클릭하여 알맞은 가치 패 배치]</span>
                 </div>
               </div>
@@ -418,6 +430,7 @@
             <div class="job-photo-wrap">
               <img src="images/soldier_1952.jpg" alt="국군 장병" class="job-photo">
               <div class="job-role-badge">평화 수호 부문</div>
+              <div class="job-ai-notice">AI를 이용하여 생성한 이미지입니다.</div>
             </div>
             <div class="job-card-body">
               <h3 class="job-title">국군 장병</h3>
@@ -436,6 +449,7 @@
             <div class="job-photo-wrap">
               <img src="images/shoeshine_boy_1952.jpg" alt="구두닦이 소년" class="job-photo">
               <div class="job-role-badge">청소년 자립 부문</div>
+              <div class="job-ai-notice">AI를 이용하여 생성한 이미지입니다.</div>
             </div>
             <div class="job-card-body">
               <h3 class="job-title">구두닦이 소년</h3>
@@ -454,6 +468,7 @@
             <div class="job-photo-wrap">
               <img src="images/rebuild_market_1952.jpg" alt="국제시장 상인" class="job-photo">
               <div class="job-role-badge">공동체 회복 부문</div>
+              <div class="job-ai-notice">AI를 이용하여 생성한 이미지입니다.</div>
             </div>
             <div class="job-card-body">
               <h3 class="job-title">국제시장 상인</h3>
@@ -472,6 +487,7 @@
             <div class="job-photo-wrap">
               <img src="images/tent_school_1953.jpg" alt="천막학교 교사" class="job-photo">
               <div class="job-role-badge">교육 및 평화 부문</div>
+              <div class="job-ai-notice">AI를 이용하여 생성한 이미지입니다.</div>
             </div>
             <div class="job-card-body">
               <h3 class="job-title">천막학교 교사</h3>
@@ -524,7 +540,7 @@
           <h2 class="dossier-heading">1953년의 희생이 일군 평화, 이제 우리가 이어갑니다</h2>
           <p class="dossier-instruction">
             70여 년 전 시민들이 서로를 도우며 지켜낸 평화는 오늘날 우리의 일상이 되었습니다.
-            교실과 가정에서 내가 실천할 <strong>‘작은 평화 서약’</strong>을 작성하고 대한민국 역사기록원 공식 평화 시민 임명장을 수여받으십시오.
+            교실과 가정에서 내가 실천할 <strong>‘작은 평화 서약’</strong>을 작성하고 나만의 평화 시민 임명장을 완성해 보세요.
           </p>
         </div>
 
@@ -574,7 +590,7 @@
 
           <div class="form-action-wrap">
             <button type="button" class="archive-btn-primary large" id="makeCertBtn">
-              공식 어린이 평화 시민 임명장 발급받기
+              나만의 어린이 평화 시민 임명장 만들기
             </button>
           </div>
         </div>
@@ -588,7 +604,7 @@
               <div class="cert-border-inner">
                 
                 <div class="cert-header">
-                  <div class="cert-national-mark">대한민국 역사평화인증 제1953호</div>
+                  <div class="cert-national-mark">역사 평화 배움터 인증 제1953호</div>
                   <h2 class="cert-title">어린이 평화 시민 임명장</h2>
                   <div class="cert-subtitle">Certificate of Young Peace Citizen</div>
                 </div>
@@ -616,7 +632,7 @@
                   <p>
                     앞으로 우리 사회와 교실 속에서 역사적 교훈을 되새기며 나눔과 배려, 
                     화해를 실천하여 평화로운 미래를 이끌어갈 것을 엄숙히 서약하였으므로 
-                    이에 <strong>‘자랑스러운 대한민국 어린이 평화 시민’</strong>으로 임명합니다.
+                    이에 <strong>‘자랑스러운 어린이 평화 시민’</strong>으로 임명합니다.
                   </p>
 
                   <div class="cert-pledge-box">
@@ -630,7 +646,7 @@
                 <div class="cert-footer">
                   <div class="cert-date" id="certDate">2026년 9월 25일</div>
                   <div class="cert-authority">
-                    <div class="authority-name">대한민국 역사기록원 평화수호위원회</div>
+                    <div class="authority-name">6·25 평화 역사 배움터</div>
                     <div class="cert-stamp">
                       <div class="stamp-circle">
                         <span>역사</span>
@@ -700,7 +716,7 @@
           <!-- Clue 3: 1952 Reconstruction & Mutual Aid -->
           <div class="clue-record-card" id="clueCard3">
             <div class="clue-status-tag" id="clueStatus3">기록 03 (2단계 완료 시 개방)</div>
-            <h4>1952년 8월: 재건 공동 울력과 구호 배급 일지</h4>
+            <h4>1952년 8월: 함께 힘을 모은 마을 재건과 구호 배급 일지</h4>
             <p>무너진 부산 국제시장과 천막학교를 다시 세우기 위해 시민들이 목재를 모으고 보리쌀을 공동 배급하던 당시 자치 기록부입니다.</p>
             <div class="clue-detail-quote">"비록 잿더미에 앉았으나, 이웃과 쌀 한 되를 나누니 내일 다시 일어설 용기가 난다."</div>
           </div>
@@ -723,6 +739,7 @@
 
   <footer class="game-footer">
     <p>대한민국 역사 아카이브 & 초등 5~6학년 사회과 교육과정 연계: 6·25 전쟁과 평화 회복의 역사</p>
+    <p class="ai-notice-footer">※ 본 아카이브 학습 자료에 수록된 사진들은 <strong>AI를 이용하여 생성한 이미지입니다.</strong></p>
   </footer>
 
   <script src="app.js"></script>
